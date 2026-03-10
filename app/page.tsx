@@ -18,7 +18,10 @@ export default function Home() {
             providing powerful R&D and manufacturing capacity with localized service.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/products" className="px-8 py-4 bg-red-600 text-white font-semibold rounded hover:bg-red-700 transition duration-300">
+            <Link href="/company" className="px-8 py-4 bg-red-600 text-white font-semibold rounded hover:bg-red-700 transition duration-300">
+              About Company
+            </Link>
+            <Link href="/products" className="px-8 py-4 bg-white text-red-600 font-semibold rounded hover:bg-gray-100 transition duration-300">
               Explore Products
             </Link>
             <Link href="/contact" className="px-8 py-4 border-2 border-white text-white font-semibold rounded hover:bg-white hover:text-gray-900 transition duration-300">
