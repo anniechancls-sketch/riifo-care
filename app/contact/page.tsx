@@ -1,7 +1,66 @@
 'use client'
 
-import { useState, FormEvent } from 'react'
+import { useState, FormEvent, useEffect } from 'react'
 import Link from 'next/link'
+
+// 印尼电话号码格式验证函数
+const validateIndonesianPhone = (phone: string): { valid: boolean; message: string } => {
+  // 移除所有空格和特殊字符
+  const cleanPhone = phone.replace(/\s/g, '').replace(/-/g, '')
+  
+  // 检查是否为空
+  if (!cleanPhone) {
+    return { valid: false, message: 'Phone number is required' }
+  }
+  
+  // 检查是否只包含数字
+  if (!/^\d+$/.test(cleanPhone)) {
+    return { valid: false, message: 'Only numbers allowed' }
+  }
+  
+  // 检查长度（印尼手机号通常是10-12位，去掉前面的0）
+  if (cleanPhone.length < 10 || cleanPhone.length > 12) {
+    return { valid: false, message: 'Invalid length (10-12 digits)' }
+  }
+  
+  // 检查印尼手机号前缀
+  // 印尼主要运营商前缀：8xx, 9xx
+  const validPrefixes = ['8', '9']
+  const firstDigit = cleanPhone.charAt(0)
+  
+  if (!validPrefixes.includes(firstDigit)) {
+    return { valid: false, message: 'Invalid Indonesian number prefix' }
+  }
+  
+  // 检查具体运营商前缀
+  const prefix2 = cleanPhone.substring(0, 2)
+  const validOperatorPrefixes = [
+    // Telkomsel
+    '81', '82', '85', '38',
+    // Indosat
+    '81', '85',
+    // XL
+    '87', '88', '83',
+    // Tri (3)
+    '89', '95', '96', '97', '98', '99',
+    // Smartfren
+    '81', '82', '85', '88', '89',
+    // Axis
+    '83', '88',
+  ]
+  
+  if (!validOperatorPrefixes.includes(prefix2)) {
+    return { valid: false, message: 'Unknown operator prefix' }
+  }
+  
+  return { valid: true, message: '✓ Valid Indonesian number' }
+}
+
+// 邮箱格式验证
+const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -15,6 +74,21 @@ export default function ContactPage() {
     agent: '',
   })
 
+  const [errors, setErrors] = useState<{
+    email?: string
+    whatsapp?: string
+    name?: string
+    province?: string
+    city?: string
+  }>({})
+
+  const [touched, setTouched] = useState<{
+    email?: boolean
+    whatsapp?: boolean
+    name?: boolean
+  }>({})
+
+  const [phoneValidation, setPhoneValidation] = useState<{ valid: boolean; message: string } | null>(null)
   const [submitted, setSubmitted] = useState(false)
 
   const provinces = [
@@ -46,9 +120,37 @@ export default function ContactPage() {
     { id: 'partnership', label: 'Distributor Partnership / 代理合作' },
   ]
 
+  // 实时验证 WhatsApp 号码
+  useEffect(() => {
+    if (formData.whatsapp && touched.whatsapp) {
+      const result = validateIndonesianPhone(formData.whatsapp)
+      setPhoneValidation(result)
+      if (!result.valid) {
+        setErrors(prev => ({ ...prev, whatsapp: result.message }))
+      } else {
+        setErrors(prev => ({ ...prev, whatsapp: undefined }))
+      }
+    }
+  }, [formData.whatsapp, touched.whatsapp])
+
+  // 实时验证邮箱
+  useEffect(() => {
+    if (formData.email && touched.email) {
+      if (!validateEmail(formData.email)) {
+        setErrors(prev => ({ ...prev, email: 'Please enter a valid email address' }))
+      } else {
+        setErrors(prev => ({ ...prev, email: undefined }))
+      }
+    }
+  }, [formData.email, touched.email])
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleBlur = (field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }))
   }
 
   const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -65,8 +167,44 @@ export default function ContactPage() {
     }))
   }
 
+  const validateForm = (): boolean => {
+    const newErrors: typeof errors = {}
+    
+    if (!formData.email || !validateEmail(formData.email)) {
+      newErrors.email = 'Please enter a valid email address'
+    }
+    
+    if (!formData.name) {
+      newErrors.name = 'Name is required'
+    }
+    
+    const phoneCheck = validateIndonesianPhone(formData.whatsapp)
+    if (!phoneCheck.valid) {
+      newErrors.whatsapp = phoneCheck.message
+    }
+    
+    if (!formData.province) {
+      newErrors.province = 'Please select a province'
+    }
+    
+    if (!formData.city) {
+      newErrors.city = 'Please select a city'
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
+    
+    // 标记所有字段为已触碰
+    setTouched({ email: true, whatsapp: true, name: true })
+    
+    if (!validateForm()) {
+      return
+    }
+    
     // 通过隐藏的 iframe 提交到 Pardot
     const form = e.target as HTMLFormElement
     form.submit()
@@ -83,15 +221,9 @@ export default function ContactPage() {
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h2>
-          <p className="text-gray-600 mb-4">
-            Your inquiry has been submitted successfully.
-          </p>
-          <p className="text-sm text-gray-500 mb-6">
-            We've received your information and will contact you via WhatsApp within 24 hours.
-          </p>
-          <Link href="/" className="inline-block px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition">
-            Back to Home
-          </Link>
+          <p className="text-gray-600 mb-4">Your inquiry has been submitted successfully.</p>
+          <p className="text-sm text-gray-500 mb-6">We'll contact you via WhatsApp within 24 hours.</p>
+          <Link href="/" className="inline-block px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition">Back to Home</Link>
         </div>
       </main>
     )
@@ -119,9 +251,6 @@ export default function ContactPage() {
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Contact Us / 联系我们</h1>
             <div className="w-20 h-1 bg-red-500 mx-auto mb-4" />
-            <p className="text-gray-600">
-              Fill out the form below and we'll get back to you via WhatsApp within 24 hours.
-            </p>
           </div>
 
           <form 
@@ -131,12 +260,7 @@ export default function ContactPage() {
             target="pardot-iframe"
             className="bg-white rounded-lg shadow-lg p-8"
           >
-            {/* Hidden iframe for Pardot submission */}
-            <iframe 
-              name="pardot-iframe" 
-              style={{ display: 'none' }} 
-              title="Pardot Form Handler"
-            />
+            <iframe name="pardot-iframe" style={{ display: 'none' }} title="Pardot Form Handler" />
 
             {/* Email Field */}
             <div className="mb-6">
@@ -148,10 +272,20 @@ export default function ContactPage() {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
+                onBlur={() => handleBlur('email')}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent outline-none transition ${
+                  errors.email && touched.email
+                    ? 'border-red-500 focus:ring-red-200' 
+                    : formData.email && !errors.email && touched.email
+                    ? 'border-green-500 focus:ring-green-200'
+                    : 'border-gray-300 focus:ring-red-500'
+                }`}
                 placeholder="your@email.com"
               />
+              {errors.email && touched.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              )}
             </div>
 
             {/* Name */}
@@ -164,13 +298,17 @@ export default function ContactPage() {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
+                onBlur={() => handleBlur('name')}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition ${
+                  errors.name ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="Enter your full name"
               />
+              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
             </div>
 
-            {/* WhatsApp */}
+            {/* WhatsApp with Validation */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Nomor WhatsApp / WhatsApp号码 <span className="text-red-500">*</span>
@@ -182,11 +320,34 @@ export default function ContactPage() {
                   name="whatsapp"
                   value={formData.whatsapp}
                   onChange={handleInputChange}
+                  onBlur={() => handleBlur('whatsapp')}
                   required
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition"
-                  placeholder="81234567890"
+                  className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent outline-none transition ${
+                    errors.whatsapp && touched.whatsapp
+                      ? 'border-red-500 focus:ring-red-200'
+                      : phoneValidation?.valid && touched.whatsapp
+                      ? 'border-green-500 focus:ring-green-200'
+                      : 'border-gray-300 focus:ring-red-500'
+                  }`}
+                  placeholder="81234567890 (without 0)"
                 />
+                {phoneValidation?.valid && touched.whatsapp && (
+                  <span className="absolute right-3 top-3.5 text-green-500">✓</span>
+                )}
               </div>
+              
+              {/* Validation Message */}
+              {formData.whatsapp && (
+                <p className={`text-sm mt-1 ${phoneValidation?.valid ? 'text-green-600' : 'text-red-500'}`}>
+                  {phoneValidation?.message}
+                </p>
+              )}
+              
+              {!touched.whatsapp && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Format: +62 followed by 10-12 digits (without leading 0)
+                </p>
+              )}
             </div>
 
             {/* Province & City */}
@@ -200,13 +361,16 @@ export default function ContactPage() {
                   value={formData.province}
                   onChange={handleProvinceChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition bg-white"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition bg-white ${
+                    errors.province ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 >
                   <option value="">Select Province</option>
                   {provinces.map(province => (
                     <option key={province} value={province}>{province}</option>
                   ))}
                 </select>
+                {errors.province && <p className="text-red-500 text-sm mt-1">{errors.province}</p>}
               </div>
 
               <div>
@@ -219,13 +383,16 @@ export default function ContactPage() {
                   onChange={handleInputChange}
                   required
                   disabled={!formData.province}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition bg-white disabled:bg-gray-100"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition bg-white disabled:bg-gray-100 ${
+                    errors.city ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 >
                   <option value="">Select City</option>
                   {formData.province && cities[formData.province]?.map(city => (
                     <option key={city} value={city}>{city}</option>
                   ))}
                 </select>
+                {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
               </div>
             </div>
 
@@ -287,14 +454,10 @@ export default function ContactPage() {
             {/* Submit */}
             <button
               type="submit"
-              className="w-full py-4 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-300 shadow-md"
+              className="w-full py-4 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-300 shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               Submit Inquiry / 提交咨询
             </button>
-
-            <p className="text-center text-sm text-gray-500 mt-4">
-              We will contact you via WhatsApp within 24 hours.
-            </p>
           </form>
         </div>
       </section>
