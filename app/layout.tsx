@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'RIIFO - 瑞肤',
-  description: 'RIIFO 瑞肤管道系统 — 专业、品质、服务',
+  title: 'RIIFO-INDONESIA',
+  description: 'RIIFO Indonesia - Ideal Piping Solutions for Everyone. Professional piping systems with 25-year warranty.',
 }
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="zh-CN">
+    <html lang="id">
       <body className={inter.className}>{children}</body>
     </html>
   )
