@@ -1,33 +1,146 @@
-import Image from 'next/image'
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
+// 幻灯片数据
+const slides = [
+  {
+    image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
+    title: 'Ideal Piping Solutions',
+    subtitle: 'for Everyone',
+    description: 'RIFENG Enterprise Group established in 1996. RIIFO — our wholly-owned brand for overseas markets, providing powerful R&D and manufacturing capacity with localized service.',
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
+    title: 'Advanced Manufacturing',
+    subtitle: 'Global Quality',
+    description: 'State-of-the-art production facilities ensuring precision and quality in every pipe we produce. ISO 9001 certified manufacturing processes.',
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
+    title: 'Global Presence',
+    subtitle: 'Local Service',
+    description: 'Serving 100+ countries with dedicated local support. 50+ distributors and 3,000+ retail stores across Indonesia alone.',
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
+    title: '25-Year Warranty',
+    subtitle: 'Peace of Mind',
+    description: 'Up to 25 years of product warranty protection backed by $10M product liability insurance from Allianz.',
+  },
+]
+
 export default function Home() {
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [isTransitioning, setIsTransitioning] = useState(false)
+
+  // 自动轮播
+  useEffect(() => {
+    const interval = setInterval(() => {
+      goToNextSlide()
+    }, 5000) // 5秒切换
+
+    return () => clearInterval(interval)
+  }, [currentSlide])
+
+  const goToNextSlide = () => {
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    setCurrentSlide((prev) => (prev + 1) % slides.length)
+    setTimeout(() => setIsTransitioning(false), 1000)
+  }
+
+  const goToSlide = (index: number) => {
+    if (isTransitioning || index === currentSlide) return
+    setIsTransitioning(true)
+    setCurrentSlide(index)
+    setTimeout(() => setIsTransitioning(false), 1000)
+  }
+
   return (
     <main className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 to-gray-900/70 z-10" />
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1581092160607-ee22621dd758?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center" />
-        <div className="relative z-20 text-center px-4 max-w-5xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight">
-            Ideal Piping Solutions
-            <span className="block text-red-500 mt-2">for Everyone</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-200 mb-10 max-w-3xl mx-auto leading-relaxed">
-            RIFENG Enterprise Group established in 1996. RIIFO — our wholly-owned brand for overseas markets, 
-            providing powerful R&D and manufacturing capacity with localized service.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/company" className="px-8 py-4 bg-red-600 text-white font-semibold rounded hover:bg-red-700 transition duration-300">
-              About Company
-            </Link>
-            <Link href="/products" className="px-8 py-4 bg-white text-red-600 font-semibold rounded hover:bg-gray-100 transition duration-300">
-              Explore Products
-            </Link>
-            <Link href="/contact" className="px-8 py-4 border-2 border-white text-white font-semibold rounded hover:bg-white hover:text-gray-900 transition duration-300">
-              Contact Us
-            </Link>
-          </div>
+      {/* Hero Slider - Vertical Sliding Banner */}
+      <section className="relative h-screen overflow-hidden">
+        {/* Slides Container */}
+        <div className="absolute inset-0">
+          {slides.map((slide, index) => {
+            // 计算每个 slide 的位置
+            let translateY = '100%' // 默认在下方
+            if (index === currentSlide) {
+              translateY = '0%' // 当前 slide 在视口内
+            } else if (index < currentSlide) {
+              translateY = '-100%' // 之前的 slide 向上移出
+            }
+            
+            // 处理循环：最后一张到下一张
+            if (currentSlide === 0 && index === slides.length - 1) {
+              translateY = '-100%'
+            }
+
+            return (
+              <div
+                key={index}
+                className="absolute inset-0 transition-transform duration-1000 ease-in-out"
+                style={{ transform: `translateY(${translateY})` }}
+              >
+                {/* Background Image */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{ backgroundImage: `url(${slide.image})` }}
+                />
+                {/* Dark Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 to-gray-900/70" />
+                
+                {/* Content */}
+                <div className="absolute inset-0 flex items-center justify-center z-10">
+                  <div className="text-center px-4 max-w-5xl mx-auto">
+                    <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight">
+                      {slide.title}
+                      <span className="block text-red-500 mt-2">{slide.subtitle}</span>
+                    </h1>
+                    <p className="text-xl md:text-2xl text-gray-200 mb-10 max-w-3xl mx-auto leading-relaxed">
+                      {slide.description}
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <Link href="/company" className="px-8 py-4 bg-red-600 text-white font-semibold rounded hover:bg-red-700 transition duration-300">
+                        About Company
+                      </Link>
+                      <Link href="/products" className="px-8 py-4 bg-white text-red-600 font-semibold rounded hover:bg-gray-100 transition duration-300">
+                        Explore Products
+                      </Link>
+                      <Link href="/contact" className="px-8 py-4 border-2 border-white text-white font-semibold rounded hover:bg-white hover:text-gray-900 transition duration-300">
+                        Contact Us
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Slide Indicators */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex gap-3">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                index === currentSlide 
+                  ? 'bg-red-500 w-8' 
+                  : 'bg-white/50 hover:bg-white/80'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-20 animate-bounce">
+          <svg className="w-6 h-6 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
         </div>
       </section>
 
