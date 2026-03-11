@@ -6,14 +6,10 @@ import Link from 'next/link'
 // 图片对比滑块组件
 function ImageComparisonSlider({ 
   beforeImage, 
-  afterImage, 
-  beforeLabel = 'Before', 
-  afterLabel = 'After' 
+  afterImage
 }: { 
   beforeImage: string
   afterImage: string
-  beforeLabel?: string
-  afterLabel?: string
 }) {
   const [sliderPosition, setSliderPosition] = useState(50)
   const [isDragging, setIsDragging] = useState(false)
@@ -55,13 +51,9 @@ function ImageComparisonSlider({
       <div className="absolute inset-0">
         <img 
           src={afterImage} 
-          alt="After" 
+          alt="Factory Production" 
           className="w-full h-full object-cover"
         />
-        {/* 标签 */}
-        <div className="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded font-semibold">
-          {afterLabel}
-        </div>
       </div>
 
       {/* 上层图片 (Before) - 通过 clip-path 控制显示区域 */}
@@ -71,13 +63,9 @@ function ImageComparisonSlider({
       >
         <img 
           src={beforeImage} 
-          alt="Before" 
+          alt="Factory Exterior" 
           className="w-full h-full object-cover"
         />
-        {/* 标签 */}
-        <div className="absolute top-4 left-4 bg-gray-800 text-white px-4 py-2 rounded font-semibold">
-          {beforeLabel}
-        </div>
       </div>
 
       {/* 拖动滑块 */}
@@ -112,8 +100,6 @@ export default function Home() {
         <ImageComparisonSlider
           beforeImage="/factory-exterior.jpg"
           afterImage="/factory-production.jpg"
-          beforeLabel="RIIFO 工厂外观 / Factory Exterior"
-          afterLabel="RIIFO 生产线 / Production Line"
         />
 
         {/* 文字覆盖层 */}
