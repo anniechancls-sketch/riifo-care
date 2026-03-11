@@ -171,19 +171,23 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[
-              { name: 'PP-R Plumbing', desc: 'Tough But Not Rough' },
-              { name: 'Multilayer Plumbing', desc: '5 Layers, 5x Healthier' },
-              { name: 'PE-X Plumbing', desc: 'Ultra Flexible' },
-              { name: 'Gas Piping', desc: 'Flexible yet Stable' },
-              { name: 'PVC Drainage', desc: 'Rule the Quiet' },
-              { name: 'PVC Conduit', desc: 'Electrical Safety' },
-              { name: 'A/C Piping', desc: 'Safe & Durable' },
-              { name: 'Underfloor Heating', desc: 'Energy-Efficient' },
-              { name: 'Infrastructure', desc: 'Large Scale Solutions' },
+              { name: 'PP-R Plumbing', desc: 'Tough But Not Rough', image: null },
+              { name: 'Multilayer Plumbing', desc: '5 Layers, 5x Healthier', image: null },
+              { name: 'PE-X Plumbing', desc: 'Ultra Flexible', image: '/pex-plumbing.png' },
+              { name: 'Gas Piping', desc: 'Flexible yet Stable', image: null },
+              { name: 'PVC Drainage', desc: 'Rule the Quiet', image: null },
+              { name: 'PVC Conduit', desc: 'Electrical Safety', image: null },
+              { name: 'A/C Piping', desc: 'Safe & Durable', image: null },
+              { name: 'Underfloor Heating', desc: 'Energy-Efficient', image: null },
+              { name: 'Infrastructure', desc: 'Large Scale Solutions', image: null },
             ].map((product) => (
               <div key={product.name} className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition duration-300 border border-gray-100">
-                <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <div className="w-10 h-10 border-4 border-red-500 rounded-full" />
+                <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
+                  {product.image ? (
+                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 border-4 border-red-500 rounded-full" />
+                  )}
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 text-center mb-2">{product.name}</h3>
                 <p className="text-sm text-gray-500 text-center">{product.desc}</p>
