@@ -108,12 +108,12 @@ export default function Home() {
     <main className="min-h-screen bg-white">
       {/* Hero Section with Image Comparison Slider */}
       <section className="relative">
-        {/* 图片对比滑块 Banner */}
+        {/* 图片对比滑块 Banner - RIIFO真实工厂 */}
         <ImageComparisonSlider
-          beforeImage="https://images.unsplash.com/photo-1581092160607-ee22621dd758?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
-          afterImage="https://images.unsplash.com/photo-1504307651254-35680f356dfd?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
-          beforeLabel="Traditional Piping"
-          afterLabel="RIIFO Solutions"
+          beforeImage="/factory-exterior.jpg"
+          afterImage="/factory-production.jpg"
+          beforeLabel="RIIFO 工厂外观 / Factory Exterior"
+          afterLabel="RIIFO 生产线 / Production Line"
         />
 
         {/* 文字覆盖层 */}
