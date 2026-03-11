@@ -31,6 +31,29 @@ export default function CompanyPage() {
         </div>
       </section>
 
+      {/* Video Showcase */}
+      <section className="py-16 bg-black">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-white mb-2">RIIFO Manufacturing</h2>
+            <p className="text-gray-400">See our world-class production facilities in action</p>
+          </div>
+          <div className="relative aspect-video bg-gray-900 rounded-xl overflow-hidden shadow-2xl">
+            <video 
+              controls 
+              className="w-full h-full object-cover"
+              poster="/factory-exterior.jpg"
+            >
+              <source src="/company-video.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <p className="text-center text-gray-500 text-sm mt-4">
+            RIIFO Advanced Production Line / RIIFO 先进生产线
+          </p>
+        </div>
+      </section>
+
       {/* Company Introduction */}
       <section className="py-16 px-4 max-w-6xl mx-auto">
         <div className="grid md:grid-cols-2 gap-12 items-center">
